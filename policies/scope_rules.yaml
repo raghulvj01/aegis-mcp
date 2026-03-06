@@ -1,0 +1,7 @@
+scopes:
+  devsecops.read:
+    - aws_list_ec2_instances
+    - k8s_list_pods
+    - git_recent_commits
+  devsecops.security:
+    - security_run_trivy_scan
