@@ -16,6 +16,11 @@ An internal [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) ser
   - [Docker](#docker)
 - [Configuration](#configuration)
   - [Environment Variables](#environment-variables)
+- [Usage Guide](#usage-guide)
+  - [Connecting MCP Clients](#connecting-mcp-clients)
+  - [Creating Test JWT Tokens](#creating-test-jwt-tokens)
+  - [Making Your First Tool Call](#making-your-first-tool-call)
+  - [Quick Reference: Token Roles and Scopes by Tool](#quick-reference-token-roles-and-scopes-by-tool)
 - [MCP Tools Reference](#mcp-tools-reference)
   - [aws\_list\_ec2\_instances](#aws_list_ec2_instances)
   - [k8s\_list\_pods](#k8s_list_pods)
@@ -33,6 +38,7 @@ An internal [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) ser
 - [Audit Logging](#audit-logging)
 - [Testing](#testing)
 - [Security Best Practices](#security-best-practices)
+- [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -209,6 +215,147 @@ export MCP_ENV="production"
 export OIDC_ISSUER="https://idp.example.com"
 export OIDC_AUDIENCE="devsecops-api"
 ```
+
+---
+
+## Usage Guide
+
+This section walks you through connecting an MCP client to the server and making your first tool call.
+
+### Connecting MCP Clients
+
+The server exposes a **streamable HTTP** transport. Any MCP-compatible client can connect to it. Below are configuration examples for popular clients.
+
+#### Claude Desktop
+
+Add the following to your Claude Desktop configuration file (`claude_desktop_config.json`):
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "devsecops": {
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving. The DevSecOps tools will appear in the tool picker.
+
+#### VS Code / GitHub Copilot
+
+Add the server to your VS Code `settings.json` or workspace `.vscode/mcp.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "devsecops": {
+        "url": "http://localhost:8000/mcp"
+      }
+    }
+  }
+}
+```
+
+#### Cursor
+
+Add the following to your Cursor MCP configuration (`.cursor/mcp.json` in your project or global config):
+
+```json
+{
+  "mcpServers": {
+    "devsecops": {
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
+#### Using the MCP CLI Inspector
+
+You can test the server interactively with the MCP Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+Then enter `http://localhost:8000/mcp` as the server URL to browse and invoke the available tools.
+
+### Creating Test JWT Tokens
+
+Every tool call requires a JWT `token` parameter. For local development and testing, you can generate unsigned JWT tokens using Python:
+
+```bash
+python -c "
+import base64, json
+
+header = base64.urlsafe_b64encode(json.dumps({'alg': 'none'}).encode()).rstrip(b'=').decode()
+payload = base64.urlsafe_b64encode(json.dumps({
+    'sub': 'dev-user',
+    'role': 'admin',
+    'scope': 'devsecops.read devsecops.security'
+}).encode()).rstrip(b'=').decode()
+print(f'{header}.{payload}.')
+"
+```
+
+This outputs a token like `eyJhbGciOiAibm9uZSJ9.eyJzdWIiOiAiZGV2LXVzZXIiLCAicm9sZSI6ICJhZG1pbiIsICJzY29wZSI6ICJkZXZzZWNvcHMucmVhZCBkZXZzZWNvcHMuc2VjdXJpdHkifQ.` that you can use with any tool. Adjust the `role` and `scope` values to test different access levels (see [Authentication and Authorization](#authentication-and-authorization)).
+
+> **Warning:** These unsigned tokens are for development only. In production, use properly signed JWTs issued by your organization's identity provider.
+
+### Making Your First Tool Call
+
+1. **Start the server** (with the health endpoint):
+
+   ```bash
+   uvicorn server.health:app --host 0.0.0.0 --port 8000
+   ```
+
+2. **Generate a test token** (admin role):
+
+   ```bash
+   TOKEN=$(python -c "
+   import base64, json
+   h = base64.urlsafe_b64encode(json.dumps({'alg': 'none'}).encode()).rstrip(b'=').decode()
+   p = base64.urlsafe_b64encode(json.dumps({'sub': 'dev-user', 'role': 'admin', 'scope': 'devsecops.read'}).encode()).rstrip(b'=').decode()
+   print(f'{h}.{p}.')
+   ")
+   ```
+
+3. **Call a tool** using curl (example: `git_recent_commits`):
+
+   ```bash
+   curl -X POST http://localhost:8000/mcp \
+     -H "Content-Type: application/json" \
+     -d "{
+       \"jsonrpc\": \"2.0\",
+       \"method\": \"tools/call\",
+       \"params\": {
+         \"name\": \"git_recent_commits\",
+         \"arguments\": {
+           \"token\": \"$TOKEN\",
+           \"limit\": 5
+         }
+       },
+       \"id\": 1
+     }"
+   ```
+
+4. **Try different roles** to see authorization in action. For example, use a `viewer` role token to call `cicd_pipeline_status` — the server will return an authorization error because only `admin` can access that tool.
+
+### Quick Reference: Token Roles and Scopes by Tool
+
+| Tool | Minimum Role | Alternative Scope |
+|---|---|---|
+| `aws_list_ec2_instances` | `viewer` | `devsecops.read` |
+| `k8s_list_pods` | `viewer` | `devsecops.read` |
+| `git_recent_commits` | `viewer` | `devsecops.read` |
+| `security_run_trivy_scan` | `security` | `devsecops.security` |
+| `cicd_pipeline_status` | `admin` | `devsecops.read` |
 
 ---
 
@@ -490,6 +637,36 @@ python -m unittest tests.test_config
 - **Use the non-root Docker image.** The provided `Dockerfile` runs as UID 10001 to minimize container escape risk.
 - **Rotate credentials.** Regularly rotate AWS credentials, kubeconfig tokens, and any other secrets used by the domain tools.
 - **Review policy files.** Periodically audit `policies/roles.yaml` and `policies/scope_rules.yaml` to ensure access mappings remain appropriate.
+
+---
+
+## Troubleshooting
+
+### Server won't start
+
+- **Missing dependencies:** Run `pip install -r requirements.txt` to ensure all packages are installed.
+- **Port already in use:** Change the port with `--port 8001` or stop the existing process on port 8000.
+- **Policy files not found:** Ensure `policies/roles.yaml` and `policies/scope_rules.yaml` exist, or set `MCP_ROLES_FILE` and `MCP_SCOPES_FILE` to the correct paths.
+
+### Authorization errors
+
+- **"token issuer mismatch"**: Your JWT `iss` claim doesn't match the `OIDC_ISSUER` environment variable. Unset `OIDC_ISSUER` for local development or ensure your token has the correct issuer.
+- **"token audience mismatch"**: Your JWT `aud` claim doesn't match `OIDC_AUDIENCE`. Unset `OIDC_AUDIENCE` for local development.
+- **"principal '...' is not allowed to call '...'"**: The token's `role` or `scope` doesn't grant access to the requested tool. Check the [Quick Reference table](#quick-reference-token-roles-and-scopes-by-tool) and update the token or policy files as needed.
+
+### MCP client can't connect
+
+- Confirm the server is running: `curl http://localhost:8000/health` should return `{"status": "ok"}`.
+- Ensure the client is configured with the correct URL (`http://localhost:8000/mcp`).
+- If running in Docker, verify the port mapping: `docker run -p 8000:8000 devsecops-mcp`.
+- Check that no firewall or proxy is blocking the connection.
+
+### Tool calls return unexpected errors
+
+- **AWS tools:** Ensure valid AWS credentials are configured (`aws configure` or environment variables).
+- **Kubernetes tools:** Ensure `kubectl` is installed and a valid kubeconfig is available.
+- **Trivy tools:** Ensure `trivy` is installed and accessible on `PATH`.
+- **Git tools:** Ensure the working directory is a Git repository.
 
 ---
 
