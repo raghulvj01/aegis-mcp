@@ -5,9 +5,14 @@ from typing import Any
 
 def list_ec2_instances(region: str) -> list[dict[str, Any]]:
     import boto3
+    from botocore.exceptions import BotoCoreError, ClientError
 
-    client = boto3.client("ec2", region_name=region)
-    reservations = client.describe_instances().get("Reservations", [])
+    try:
+        client = boto3.client("ec2", region_name=region)
+        reservations = client.describe_instances().get("Reservations", [])
+    except (BotoCoreError, ClientError) as exc:
+        raise RuntimeError(f"AWS EC2 error in region '{region}': {exc}") from exc
+
     output: list[dict[str, Any]] = []
     for reservation in reservations:
         for instance in reservation.get("Instances", []):

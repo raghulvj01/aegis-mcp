@@ -11,3 +11,4 @@ roles:
     - k8s_list_pods
     - security_run_trivy_scan
     - git_recent_commits
+    - cicd_pipeline_status

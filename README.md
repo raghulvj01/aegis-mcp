@@ -21,6 +21,7 @@ An internal [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) ser
   - [k8s\_list\_pods](#k8s_list_pods)
   - [security\_run\_trivy\_scan](#security_run_trivy_scan)
   - [git\_recent\_commits](#git_recent_commits)
+  - [cicd\_pipeline\_status](#cicd_pipeline_status)
 - [Authentication and Authorization](#authentication-and-authorization)
   - [JWT Identity Extraction](#jwt-identity-extraction)
   - [Role-Based Access Control](#role-based-access-control)
@@ -39,7 +40,7 @@ An internal [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) ser
 
 ## Features
 
-- **FastMCP server** with domain-specific tools for AWS, Kubernetes, security scanning, and Git.
+- **FastMCP server** with domain-specific tools for AWS, Kubernetes, security scanning, Git, and CI/CD pipelines.
 - **JWT-based identity extraction** with tool-level RBAC checks.
 - **Structured JSON audit logs** for every tool invocation (started, succeeded, failed with duration).
 - **Policy-driven authorization** via externalized YAML files (`policies/roles.yaml` and `policies/scope_rules.yaml`).
@@ -102,7 +103,7 @@ devsecops-mcp/
 │   │   └── repo.py          # Fetch recent git commits
 │   └── cicd/
 │       ├── __init__.py
-│       └── pipeline.py      # CI/CD pipeline status (scaffold)
+│       └── pipeline.py      # CI/CD pipeline status
 ├── policies/                # Authorization policy definitions
 │   ├── roles.yaml           # Role → tool mappings
 │   └── scope_rules.yaml     # Scope → tool mappings
@@ -110,9 +111,14 @@ devsecops-mcp/
 │   ├── __init__.py
 │   └── audit_logger.py      # Decorator for structured audit events
 ├── tests/                   # Unit tests
+│   ├── test_auth.py         # JWT decoding and claim validation tests
 │   ├── test_authz.py        # Authorization logic tests
-│   └── test_config.py       # Configuration loader tests
+│   ├── test_cicd.py         # CI/CD pipeline tool tests
+│   ├── test_config.py       # Configuration loader tests
+│   ├── test_policies.py     # Policy file validation tests
+│   └── test_tools.py        # Tool implementation tests
 ├── Dockerfile               # Container image (Python 3.12-slim, non-root)
+├── .env.example             # Environment variable template
 ├── requirements.txt         # Python dependencies
 └── README.md                # This file
 ```
@@ -274,6 +280,24 @@ Fetch recent commits from the current Git repository.
 
 ---
 
+### `cicd_pipeline_status`
+
+Fetch the status of a CI/CD pipeline.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `token` | `str` | Yes | JWT bearer token |
+| `base_url` | `str` | Yes | Base URL of the CI/CD service API |
+| `pipeline_id` | `str` | Yes | Unique identifier of the pipeline |
+| `api_token` | `str` | Yes | API token for authenticating with the CI/CD service |
+
+**Returns:** Pipeline status as a JSON object.
+
+**Allowed roles:** `admin`
+**Allowed scopes:** `devsecops.read`
+
+---
+
 ## Authentication and Authorization
 
 ### JWT Identity Extraction
@@ -302,7 +326,7 @@ Roles are mapped to permitted tools in `policies/roles.yaml`. The server checks 
 |---|---|
 | `viewer` | `aws_list_ec2_instances`, `k8s_list_pods`, `git_recent_commits` |
 | `security` | `security_run_trivy_scan`, `git_recent_commits` |
-| `admin` | All tools |
+| `admin` | All tools (including `cicd_pipeline_status`) |
 
 ### Scope-Based Access Control
 
@@ -312,7 +336,7 @@ Scopes provide an alternative authorization path via the JWT `scope` claim (spac
 
 | Scope | Permitted Tools |
 |---|---|
-| `devsecops.read` | `aws_list_ec2_instances`, `k8s_list_pods`, `git_recent_commits` |
+| `devsecops.read` | `aws_list_ec2_instances`, `k8s_list_pods`, `git_recent_commits`, `cicd_pipeline_status` |
 | `devsecops.security` | `security_run_trivy_scan` |
 
 ### Authorization Flow
@@ -357,6 +381,7 @@ roles:
     - k8s_list_pods
     - security_run_trivy_scan
     - git_recent_commits
+    - cicd_pipeline_status
 ```
 
 ### `scope_rules.yaml`
@@ -369,6 +394,7 @@ scopes:
     - aws_list_ec2_instances
     - k8s_list_pods
     - git_recent_commits
+    - cicd_pipeline_status
   devsecops.security:
     - security_run_trivy_scan
 ```
@@ -447,7 +473,11 @@ python -m unittest tests.test_config
 | Test File | Description |
 |---|---|
 | `tests/test_authz.py` | Validates role-based and scope-based authorization logic |
+| `tests/test_auth.py` | Validates JWT decoding, claim defaults, and issuer/audience rejection |
 | `tests/test_config.py` | Validates default settings are loaded correctly |
+| `tests/test_policies.py` | Validates policy files include expected tool mappings |
+| `tests/test_tools.py` | Validates git tool output parsing and error handling |
+| `tests/test_cicd.py` | Validates CI/CD pipeline status tool |
 
 ---
 

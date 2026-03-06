@@ -6,11 +6,17 @@ from typing import Any
 
 
 def list_pods(namespace: str = "default") -> list[dict[str, Any]]:
-    result = subprocess.check_output(
-        ["kubectl", "get", "pods", "-n", namespace, "-o", "json"],
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
+    try:
+        result = subprocess.check_output(
+            ["kubectl", "get", "pods", "-n", namespace, "-o", "json"],
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError("kubectl is not installed or not on PATH") from exc
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f"kubectl error (namespace '{namespace}'): {exc.output}") from exc
+
     payload = json.loads(result)
     return [
         {

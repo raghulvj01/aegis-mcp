@@ -6,6 +6,7 @@ from audit.audit_logger import audit_tool_call
 from server.auth import authorize_tool, decode_bearer_token
 from server.config import load_role_policies, load_scope_policies, load_settings
 from tools.aws.ec2 import list_ec2_instances
+from tools.cicd.pipeline import pipeline_status
 from tools.git.repo import get_recent_commits
 from tools.kubernetes.pods import list_pods
 from tools.security.trivy import run_trivy_scan
@@ -48,6 +49,14 @@ def security_run_trivy_scan(token: str, image: str) -> dict:
 def git_recent_commits(token: str, limit: int = 10) -> list[dict[str, str]]:
     _authorize(token, "git_recent_commits")
     return get_recent_commits(limit)
+
+
+@mcp.tool()
+@audit_tool_call("cicd_pipeline_status")
+def cicd_pipeline_status(token: str, base_url: str, pipeline_id: str, api_token: str) -> dict:
+    """Fetch the status of a CI/CD pipeline."""
+    _authorize(token, "cicd_pipeline_status")
+    return pipeline_status(base_url, pipeline_id, api_token)
 
 
 if __name__ == "__main__":
