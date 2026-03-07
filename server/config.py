@@ -11,7 +11,7 @@ from typing import Any
 class Settings:
     """Runtime configuration for the MCP service."""
 
-    service_name: str = "devsecops"
+    service_name: str = "aegis"
     environment: str = "dev"
     policy_roles_path: Path = Path("policies/roles.yaml")
     policy_scopes_path: Path = Path("policies/scope_rules.yaml")
@@ -59,7 +59,7 @@ def _load_yaml(path: Path) -> dict[str, Any]:
 
 def load_settings() -> Settings:
     return Settings(
-        service_name=os.getenv("MCP_SERVICE_NAME", "devsecops"),
+        service_name=os.getenv("MCP_SERVICE_NAME", "aegis"),
         environment=os.getenv("MCP_ENV", "dev"),
         policy_roles_path=Path(os.getenv("MCP_ROLES_FILE", "policies/roles.yaml")),
         policy_scopes_path=Path(os.getenv("MCP_SCOPES_FILE", "policies/scope_rules.yaml")),

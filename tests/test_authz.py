@@ -9,8 +9,8 @@ class TestAuthorization(unittest.TestCase):
         authorize_tool(principal, "k8s_list_pods", {"viewer": ["k8s_list_pods"]}, {})
 
     def test_authorize_tool_allows_scope(self) -> None:
-        principal = Principal(subject="u2", role="none", scopes=["devsecops.read"])
-        authorize_tool(principal, "git_recent_commits", {}, {"devsecops.read": ["git_recent_commits"]})
+        principal = Principal(subject="u2", role="none", scopes=["aegis.read"])
+        authorize_tool(principal, "git_recent_commits", {}, {"aegis.read": ["git_recent_commits"]})
 
 
 if __name__ == "__main__":

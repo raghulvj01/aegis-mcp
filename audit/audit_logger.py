@@ -6,7 +6,7 @@ from typing import Any, Callable
 
 from server.logging import get_logger
 
-logger = get_logger("mcp.devsecops.audit")
+logger = get_logger("mcp.aegis.audit")
 
 
 

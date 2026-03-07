@@ -8,7 +8,7 @@ from server.config import load_settings
 
 settings = load_settings()
 mcp = FastMCP(settings.service_name, json_response=True)
-app = FastAPI(title="devsecops-mcp")
+app = FastAPI(title="aegis-mcp")
 
 
 @app.get("/health")

@@ -21,7 +21,7 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(payload, default=str)
 
 
-def get_logger(name: str = "mcp.devsecops") -> logging.Logger:
+def get_logger(name: str = "mcp.aegis") -> logging.Logger:
     logger = logging.getLogger(name)
     if logger.handlers:
         return logger

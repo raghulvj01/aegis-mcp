@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🛡️ DevSecOps MCP Server</h1>
+  <h1>🛡️ Aegis MCP Server</h1>
   <p><b>An open-source Model Context Protocol (MCP) server for DevOps and Security automation workflows.</b></p>
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -10,7 +10,7 @@
 
 ---
 
-**DevSecOps MCP Server** empowers AI assistants (like Claude, Cursor, and GitHub Copilot) to perform cloud architecture administration, security scanning, and network analyses directly from their execution environments. It wraps powerful underlying tools and SDKs into secure, audited MCP tool sets.
+**Aegis MCP Server** empowers AI assistants (like Claude, Cursor, and GitHub Copilot) to perform cloud architecture administration, security scanning, and network analyses directly from their execution environments. It wraps powerful underlying tools and SDKs into secure, audited MCP tool sets.
 
 ---
 
@@ -31,7 +31,7 @@
 flowchart TD
     Client[MCP Client / AI Agent] -->|Tool Call| AuthZ[Auth & RBAC Layer]
 
-    subgraph devsecops-mcp["DevSecOps MCP Server"]
+    subgraph aegis-mcp["Aegis MCP Server"]
         AuthZ --> Audit[Audit Logger]
         Audit --> ToolsLayer[Tool Dispatch Layer]
     end
@@ -90,8 +90,8 @@ The server receives MCP tool-call requests over **streamable HTTP** or **stdio**
 ### Installation
 
 ```bash
-git clone https://github.com/raghulvj01/devsecops-mcp.git
-cd devsecops-mcp
+git clone https://github.com/raghulvj01/aegis-mcp.git
+cd aegis-mcp
 
 # Create virtual environment
 python -m venv .venv
@@ -117,9 +117,9 @@ Add to your MCP config (e.g., `mcp_config.json`):
 ```json
 {
   "mcpServers": {
-    "devsecops": {
-      "command": "c:\\path\\to\\devsecops-mcp\\.venv\\Scripts\\python.exe",
-      "args": ["c:\\path\\to\\devsecops-mcp\\run_stdio.py"]
+    "aegis": {
+      "command": "c:\\path\\to\\aegis-mcp\\.venv\\Scripts\\python.exe",
+      "args": ["c:\\path\\to\\aegis-mcp\\run_stdio.py"]
     }
   }
 }
@@ -136,9 +136,9 @@ Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "devsecops": {
-      "command": "c:\\path\\to\\devsecops-mcp\\.venv\\Scripts\\python.exe",
-      "args": ["c:\\path\\to\\devsecops-mcp\\run_stdio.py"]
+    "aegis": {
+      "command": "c:\\path\\to\\aegis-mcp\\.venv\\Scripts\\python.exe",
+      "args": ["c:\\path\\to\\aegis-mcp\\run_stdio.py"]
     }
   }
 }
@@ -157,7 +157,7 @@ uvicorn server.health:app --host 0.0.0.0 --port 8000
 ```json
 {
   "mcpServers": {
-    "devsecops": {
+    "aegis": {
       "url": "http://localhost:8000/mcp"
     }
   }
@@ -167,8 +167,8 @@ uvicorn server.health:app --host 0.0.0.0 --port 8000
 ### Docker Deployment
 
 ```bash
-docker build -t devsecops-mcp .
-docker run -p 8000:8000 devsecops-mcp
+docker build -t aegis-mcp .
+docker run -p 8000:8000 aegis-mcp
 ```
 
 ---
@@ -178,7 +178,7 @@ docker run -p 8000:8000 devsecops-mcp
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `MCP_AUTH_DISABLED` | Disable JWT auth (auto-set for stdio) | `false` |
-| `MCP_SERVICE_NAME` | Name of the MCP service | `devsecops` |
+| `MCP_SERVICE_NAME` | Name of the MCP service | `aegis` |
 | `MCP_ENV` | Environment (`dev`, `staging`, `prod`) | `dev` |
 | `MCP_ROLES_FILE` | Path to roles policy YAML | `policies/roles.yaml` |
 | `MCP_SCOPES_FILE` | Path to scopes policy YAML | `policies/scope_rules.yaml` |

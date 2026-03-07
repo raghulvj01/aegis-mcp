@@ -12,7 +12,7 @@ class TestPolicies(unittest.TestCase):
     def test_scope_policies_include_cicd(self) -> None:
         settings = Settings()
         policies = load_scope_policies(settings)
-        self.assertIn("cicd_pipeline_status", policies.get("devsecops.read", []))
+        self.assertIn("cicd_pipeline_status", policies.get("aegis.read", []))
 
     def test_viewer_cannot_access_trivy(self) -> None:
         settings = Settings()

@@ -1,5 +1,5 @@
 scopes:
-  devsecops.read:
+  aegis.read:
     - aws_list_ec2_instances
     - k8s_list_pods
     - git_recent_commits
@@ -9,7 +9,7 @@ scopes:
     - network_port_scan
     - aws_check_s3_public_access
     - security_semgrep_scan
-  devsecops.security:
+  aegis.security:
     - security_run_trivy_scan
     - security_scan_secrets
     - security_check_dependencies
