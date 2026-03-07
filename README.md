@@ -23,7 +23,7 @@ Tool call → aws_check_s3_public_access
 Result → bucket audit report
 ```
 
-![Aegis MCP Demo](docs/demo.png)
+![Aegis MCP Demo](docs/demo-aegis.gif)
 
 ---
 
