@@ -1,16 +1,29 @@
 <div align="center">
   <h1>🛡️ Aegis MCP Server</h1>
-  <p><b>An open-source Model Context Protocol (MCP) server for DevOps and Security automation workflows.</b></p>
+  <p><b>Aegis MCP is an open-source, DevSecOps-focused Model Context Protocol server that allows AI agents to safely interact with cloud infrastructure, CI/CD systems, and security tooling.</b></p>
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
   [![Python version](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-  [![MCP Protocol](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
+  [![MCP Protocol](https://img.shields.io/badge/MCP-Server-green.svg)](https://modelcontextprotocol.io/)
   [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 </div>
 
 ---
 
 **Aegis MCP Server** empowers AI assistants (like Claude, Cursor, and GitHub Copilot) to perform cloud architecture administration, security scanning, and network analyses directly from their execution environments. It wraps powerful underlying tools and SDKs into secure, audited MCP tool sets.
+
+---
+
+## 📸 Demo in Action
+
+```text
+AI Agent: "Check if any S3 bucket is publicly accessible"
+
+Tool call → aws_check_s3_public_access
+Result → bucket audit report
+```
+
+![Aegis MCP Demo](docs/demo.png)
 
 ---
 
@@ -47,7 +60,44 @@ The server receives MCP tool-call requests over **streamable HTTP** or **stdio**
 
 ---
 
+## 📂 Repository Structure
+
+```text
+aegis-mcp/
+│
+├── server/
+│   ├── main.py
+│   ├── health.py
+│   ├── auth.py
+│   └── tools/
+│       ├── aws/
+│       ├── kubernetes/
+│       ├── security/
+│       └── network/
+│
+├── policies/
+├── tests/
+├── Dockerfile
+└── run_stdio.py
+```
+
+---
+
 ## 🧰 Available Tools
+
+### Example Tool Invocation
+
+```text
+Tool: security_run_trivy_scan
+
+Input:
+image=nginx:latest
+
+Output:
+CRITICAL: 2
+HIGH: 4
+MEDIUM: 7
+```
 
 ### Cloud & DevOps
 | Tool | Description |
@@ -69,6 +119,7 @@ The server receives MCP tool-call requests over **streamable HTTP** or **stdio**
 ### Network & Infrastructure Security
 | Tool | Description |
 |------|-------------|
+| `k8s_security_audit` | Audit Kubernetes clusters (privileged containers, wildcard RBAC, etc.) |
 | `network_port_scan` | TCP port scan to detect exposed services |
 | `security_check_ssl_certificate` | Validate SSL/TLS certificate details and expiry |
 | `security_check_http_headers` | Audit URLs for security headers (HSTS, CSP, etc.) |
@@ -234,6 +285,16 @@ The `@audit_tool_call` decorator emits structured JSON logs for every invocation
 1. **Enforce JWT Signature Validation** — Update `server/auth.py` to verify RS256 JWTs using your IdP's JWKS endpoint for production.
 2. **Least-Privilege Credentials** — Assign ReadOnly IAM / K8s roles to the server environment.
 3. **Monitor Audit Logs** — Forward JSON logs to a SIEM. Set up anomaly detection for aggressive looping.
+
+---
+
+## 🛣️ Roadmap
+
+- [ ] Terraform security scanner
+- [ ] IAM policy risk detection
+- [ ] Kubernetes misconfiguration scanner (Basic `k8s_security_audit` implemented!)
+- [ ] GitHub Actions security audit
+- [ ] Cloud cost analysis tools
 
 ---
 

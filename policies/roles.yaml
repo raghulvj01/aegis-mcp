@@ -8,6 +8,7 @@ roles:
     - network_port_scan
     - security_semgrep_scan
   security:
+    - k8s_security_audit
     - security_run_trivy_scan
     - git_recent_commits
     - security_scan_secrets
@@ -20,6 +21,7 @@ roles:
   admin:
     - aws_list_ec2_instances
     - k8s_list_pods
+    - k8s_security_audit
     - security_run_trivy_scan
     - git_recent_commits
     - cicd_pipeline_status

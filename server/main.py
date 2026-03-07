@@ -12,6 +12,7 @@ from tools.aws.s3 import check_s3_public_access
 from tools.cicd.pipeline import pipeline_status
 from tools.git.repo import get_recent_commits
 from tools.kubernetes.pods import list_pods
+from tools.kubernetes.audit import k8s_security_audit
 from tools.network.headers import check_http_headers
 from tools.network.port_scanner import port_scan
 from tools.network.ssl_checker import check_ssl_certificate
@@ -48,6 +49,14 @@ def aws_list_ec2_instances(region: str, token: str = "") -> list[dict]:
 def k8s_list_pods(namespace: str = "default", token: str = "") -> list[dict]:
     _authorize(token, "k8s_list_pods")
     return list_pods(namespace)
+
+
+@mcp.tool()
+@audit_tool_call("k8s_security_audit")
+def k8s_security_audit_tool(namespace: str = "", token: str = "") -> list[dict]:
+    """Audit Kubernetes clusters for misconfigurations and security risks (privileged containers, hostNetwork, exposed NodePorts, cluster-admin service accounts)."""
+    _authorize(token, "k8s_security_audit")
+    return k8s_security_audit(namespace)
 
 
 @mcp.tool()
