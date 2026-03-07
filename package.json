@@ -1,0 +1,53 @@
+{
+  "name": "@raghulm/aegis-mcp",
+  "version": "1.0.4",
+  "description": "DevSecOps-focused MCP server for AWS, Kubernetes, CI/CD, and security tooling.",
+  "license": "MIT",
+  "author": "Raghul M",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raghulvj01/aegis-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/raghulvj01/aegis-mcp/issues"
+  },
+  "homepage": "https://github.com/raghulvj01/aegis-mcp#readme",
+  "type": "commonjs",
+  "bin": {
+    "aegis-mcp": "bin/aegis-mcp.js"
+  },
+  "scripts": {
+    "setup:python": "node ./bin/prepare-python-env.js",
+    "start": "node ./bin/aegis-mcp.js",
+    "pack:check": "npm pack --dry-run"
+  },
+  "files": [
+    "audit/**/*.py",
+    "bin/*.js",
+    "policies/*.yaml",
+    "server/**/*.py",
+    "tools/**/*.py",
+    "requirements.txt",
+    "run_stdio.py",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "devsecops",
+    "security",
+    "aws",
+    "kubernetes",
+    "claude"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@raghulm/aegis-mcp": "^1.0.4"
+  }
+}

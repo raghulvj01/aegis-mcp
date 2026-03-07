@@ -137,6 +137,7 @@ MEDIUM: 7
 ### Prerequisites
 
 - **Python 3.12+**
+- **Node.js 18+** (only if you want to run via npm/npx)
 - **Semgrep** — `pip install semgrep` (for SAST scanning)
 - Optional: AWS CLI / `boto3`, `kubectl`, Trivy (for their respective tools)
 
@@ -159,6 +160,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Install via npm (Public Package)
+
+```bash
+npm install -g @raghulm/aegis-mcp
+# or run without installing globally:
+npx -y @raghulm/aegis-mcp
+```
+
+On first run, the npm wrapper creates a local Python virtual environment and installs dependencies from `requirements.txt` automatically.
+
 ---
 
 ## 🤖 Usage with AI Agents
@@ -171,8 +182,8 @@ Add to your MCP config (e.g., `mcp_config.json`):
 {
   "mcpServers": {
     "aegis": {
-      "command": "c:\\path\\to\\aegis-mcp\\.venv\\Scripts\\python.exe",
-      "args": ["c:\\path\\to\\aegis-mcp\\run_stdio.py"]
+      "command": "npx",
+      "args": ["-y", "@raghulm/aegis-mcp"]
     }
   }
 }
@@ -190,8 +201,8 @@ Add to `claude_desktop_config.json`:
 {
   "mcpServers": {
     "aegis": {
-      "command": "c:\\path\\to\\aegis-mcp\\.venv\\Scripts\\python.exe",
-      "args": ["c:\\path\\to\\aegis-mcp\\run_stdio.py"]
+      "command": "npx",
+      "args": ["-y", "@raghulm/aegis-mcp"]
     }
   }
 }
@@ -297,6 +308,23 @@ The `@audit_tool_call` decorator emits structured JSON logs for every invocation
 - [ ] Kubernetes misconfiguration scanner (Basic `k8s_security_audit` implemented!)
 - [ ] GitHub Actions security audit
 - [ ] Cloud cost analysis tools
+
+---
+
+## 📦 Publish to npm
+
+```bash
+# 1) Login to npm
+npm login
+
+# 2) Verify package contents
+npm run pack:check
+
+# 3) Publish publicly
+npm publish --access public
+```
+
+For scoped packages like `@raghulm/aegis-mcp`, keep `--access public` in the publish command.
 
 ---
 
