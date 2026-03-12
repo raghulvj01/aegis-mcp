@@ -1,19 +1,17 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from mcp.server.fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse, Response
 
 from server.config import load_settings
+from server.main import mcp
 
 settings = load_settings()
-mcp = FastMCP(settings.service_name, json_response=True)
-app = FastAPI(title="aegis-mcp")
 
 
-@app.get("/health")
-def health() -> JSONResponse:
+@mcp.custom_route("/health", methods=["GET"], include_in_schema=False)
+async def health(_request: Request) -> Response:
     return JSONResponse({"status": "ok", "service": settings.service_name})
 
 
-app.mount("/mcp", mcp.streamable_http_app())
+app = mcp.streamable_http_app()

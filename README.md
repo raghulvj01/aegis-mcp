@@ -236,6 +236,49 @@ docker build -t aegis-mcp .
 docker run -p 8000:8000 aegis-mcp
 ```
 
+### Telegram Bot (MCP Test Bridge)
+
+You can quickly test your MCP server from Telegram with `run_telegram_bot.py`.
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token.
+2. Start the MCP server in HTTP mode:
+
+```bash
+uvicorn server.health:app --host 0.0.0.0 --port 8000
+```
+
+3. Set environment variables and run the bot:
+
+```bash
+# Linux/Mac
+export TELEGRAM_BOT_TOKEN="<bot-token>"
+export MCP_SERVER_URL="http://127.0.0.1:8000/mcp"
+export TELEGRAM_ALLOWED_CHAT_IDS="<your-chat-id>"
+export MISTRAL_API_KEY="<your-mistral-key>" # required for /ask
+python run_telegram_bot.py
+
+# Windows PowerShell
+$env:TELEGRAM_BOT_TOKEN="<bot-token>"
+$env:MCP_SERVER_URL="http://127.0.0.1:8000/mcp"
+$env:TELEGRAM_ALLOWED_CHAT_IDS="<your-chat-id>"
+$env:MISTRAL_API_KEY="<your-mistral-key>"   # required for /ask
+python .\run_telegram_bot.py
+```
+
+Telegram commands:
+
+- `/health` - Check MCP health endpoint
+- `/tools` - List available MCP tools
+- `/call <tool_name> <json_args>` - Call a tool
+- `/ask <question>` - Use Mistral AI to pick and execute an MCP tool
+
+Example:
+
+```text
+/call security_check_ssl_certificate {"hostname":"example.com"}
+/ask check SSL certificate expiry for example.com
+```
+
 ---
 
 ## ⚙️ Configuration

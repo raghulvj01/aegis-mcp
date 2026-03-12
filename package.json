@@ -29,6 +29,7 @@
     "tools/**/*.py",
     "requirements.txt",
     "run_stdio.py",
+    "run_telegram_bot.py",
     "README.md",
     "LICENSE"
   ],
