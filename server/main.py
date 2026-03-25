@@ -10,6 +10,15 @@ from server.config import load_role_policies, load_scope_policies, load_settings
 from tools.aws.ec2 import list_ec2_instances
 from tools.aws.s3 import check_s3_public_access
 from tools.cicd.pipeline import pipeline_status
+from tools.cicd.jenkins import (
+    jenkins_list_jobs as _jenkins_list_jobs,
+    jenkins_get_job_info as _jenkins_get_job_info,
+    jenkins_create_job as _jenkins_create_job,
+    jenkins_trigger_build as _jenkins_trigger_build,
+    jenkins_get_build_info as _jenkins_get_build_info,
+    jenkins_get_build_log as _jenkins_get_build_log,
+    jenkins_delete_job as _jenkins_delete_job,
+)
 from tools.git.repo import get_recent_commits
 from tools.kubernetes.pods import list_pods
 from tools.kubernetes.audit import k8s_security_audit
@@ -138,6 +147,65 @@ def security_semgrep_scan(path: str, config: str = "auto", token: str = "") -> d
     """Run a Semgrep SAST scan on a local directory or file. This tool runs locally and has full access to the user's local filesystem (e.g. C:\\... paths). Config can be 'auto', 'p/python', 'p/javascript', etc."""
     _authorize(token, "security_semgrep_scan")
     return run_semgrep_scan(path, config)
+
+
+# ── Jenkins CI/CD tools ────────────────────────────────────────────
+
+
+@mcp.tool()
+@audit_tool_call("jenkins_list_jobs")
+def jenkins_list_jobs(url: str, username: str, api_token: str, token: str = "") -> list[dict]:
+    """List all jobs on a Jenkins server. Provide the Jenkins URL, username, and API token."""
+    _authorize(token, "jenkins_list_jobs")
+    return _jenkins_list_jobs(url, username, api_token)
+
+
+@mcp.tool()
+@audit_tool_call("jenkins_get_job_info")
+def jenkins_get_job_info(url: str, username: str, api_token: str, job_name: str, token: str = "") -> dict:
+    """Get detailed information about a specific Jenkins job including build history and health."""
+    _authorize(token, "jenkins_get_job_info")
+    return _jenkins_get_job_info(url, username, api_token, job_name)
+
+
+@mcp.tool()
+@audit_tool_call("jenkins_create_job")
+def jenkins_create_job(url: str, username: str, api_token: str, job_name: str, config_xml: str = "", token: str = "") -> dict:
+    """Create a new Jenkins job. Optionally provide config_xml for the job definition; otherwise a minimal freestyle project is created."""
+    _authorize(token, "jenkins_create_job")
+    return _jenkins_create_job(url, username, api_token, job_name, config_xml)
+
+
+@mcp.tool()
+@audit_tool_call("jenkins_trigger_build")
+def jenkins_trigger_build(url: str, username: str, api_token: str, job_name: str, parameters: str = "", token: str = "") -> dict:
+    """Trigger a build for an existing Jenkins job. Optionally pass parameters as a JSON string, e.g. '{"BRANCH": "main"}'."""
+    _authorize(token, "jenkins_trigger_build")
+    return _jenkins_trigger_build(url, username, api_token, job_name, parameters)
+
+
+@mcp.tool()
+@audit_tool_call("jenkins_get_build_info")
+def jenkins_get_build_info(url: str, username: str, api_token: str, job_name: str, build_number: int, token: str = "") -> dict:
+    """Get information about a specific Jenkins build including result, duration, and status."""
+    _authorize(token, "jenkins_get_build_info")
+    return _jenkins_get_build_info(url, username, api_token, job_name, build_number)
+
+
+@mcp.tool()
+@audit_tool_call("jenkins_get_build_log")
+def jenkins_get_build_log(url: str, username: str, api_token: str, job_name: str, build_number: int, token: str = "") -> dict:
+    """Fetch the console output of a Jenkins build."""
+    _authorize(token, "jenkins_get_build_log")
+    return _jenkins_get_build_log(url, username, api_token, job_name, build_number)
+
+
+@mcp.tool()
+@audit_tool_call("jenkins_delete_job")
+def jenkins_delete_job(url: str, username: str, api_token: str, job_name: str, token: str = "") -> dict:
+    """Delete a Jenkins job from the server."""
+    _authorize(token, "jenkins_delete_job")
+    return _jenkins_delete_job(url, username, api_token, job_name)
 
 
 if __name__ == "__main__":
