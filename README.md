@@ -32,7 +32,7 @@ Result → bucket audit report
 
 ## 🌟 Key Features
 
-- 🚀 **FastMCP Server** — Exposes domain-specific tools for AWS, Kubernetes, security scanning, Git, network analysis, and CI/CD pipelines.
+- 🚀 **FastMCP Server** — Exposes domain-specific tools for AWS, Kubernetes, security scanning, Git, network analysis, Jenkins, and CI/CD pipelines.
 - 🔐 **Flexible Authorization** — JWT-based RBAC for production deployments; automatically disabled for local stdio sessions (Claude Desktop, Agent IDEs).
 - 📜 **Structured Audit Logging** — Emits clean JSON audit logs for every invocation, suitable for SIEM integrations.
 - 🛠 **Expandable Tooling** — Easily add new integrations. Includes ready-to-use scanners for dependencies, secrets, SSL/TLS certs, Semgrep, Trivy, and more.
@@ -57,6 +57,7 @@ flowchart TD
     ToolsLayer --> Sec[Trivy / Semgrep]
     ToolsLayer --> Net[Nmap / SSL]
     ToolsLayer --> Git[Git CLI]
+    ToolsLayer --> Jenkins[Jenkins API]
 ```
 
 The server receives MCP tool-call requests over **streamable HTTP** or **stdio** transport. In HTTP mode, each request requires a JWT bearer token for authorization. In stdio mode (local usage), authorization is automatically disabled.
@@ -74,6 +75,7 @@ aegis-mcp/
 │   ├── auth.py
 │   └── tools/
 │       ├── aws/
+│       ├── cicd/          # Jenkins + pipeline tools
 │       ├── kubernetes/
 │       ├── security/
 │       └── network/
@@ -110,6 +112,20 @@ MEDIUM: 7
 | `k8s_list_pods` | List Kubernetes pods in a given namespace |
 | `cicd_pipeline_status` | Fetch CI/CD pipeline execution status |
 | `git_recent_commits` | Fetch recent commit history from the active Git repo |
+
+### Jenkins CI/CD
+| Tool | Description |
+|------|-------------|
+| `jenkins_list_jobs` | List all jobs on a Jenkins server |
+| `jenkins_get_job_info` | Get detailed info about a specific job (build history, health) |
+| `jenkins_create_job` | Create a new Jenkins job from XML config |
+| `jenkins_trigger_build` | Trigger a build with optional parameters (JSON) |
+| `jenkins_get_build_info` | Get result, duration, and status of a specific build |
+| `jenkins_get_build_log` | Fetch console output of a build |
+| `jenkins_delete_job` | Delete a Jenkins job |
+
+> [!TIP]
+> **Jenkins tools require per-call credentials** — pass `url`, `username`, and `api_token` with each call. No global env vars needed.
 
 ### Application Security & SAST
 | Tool | Description |
@@ -190,7 +206,7 @@ Add to your MCP config (e.g., `mcp_config.json`):
 }
 ```
 
-> ✅ **All 12 tools work**, including Semgrep SAST.
+> ✅ **All 19 tools work**, including Semgrep SAST and Jenkins integration.
 
 ### Claude Desktop
 
@@ -209,7 +225,7 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-> ⚠️ **11 of 12 tools work.** Semgrep SAST does not work due to Windows pipe limitations.
+> ⚠️ **18 of 19 tools work.** Semgrep SAST does not work due to Windows pipe limitations.
 
 ### Cursor / Windsurf (HTTP Mode)
 
@@ -304,6 +320,7 @@ The `@audit_tool_call` decorator emits structured JSON logs for every invocation
 
 ## 🛣️ Roadmap
 
+- [x] Jenkins CI/CD integration (list, create, trigger, inspect, delete jobs) ✅
 - [ ] Terraform security scanner
 - [ ] IAM policy risk detection
 - [ ] Kubernetes misconfiguration scanner (Basic `k8s_security_audit` implemented!)
