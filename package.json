@@ -1,6 +1,6 @@
 {
   "name": "@raghulvj01/aegis-mcp",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "DevSecOps-focused MCP server for AWS, Kubernetes, CI/CD, and security tooling.",
   "license": "MIT",
   "author": "Raghul M",
@@ -40,7 +40,8 @@
     "aws",
     "kubernetes",
     "claude",
-    "jenkins"
+    "jenkins",
+    "terraform"
   ],
   "publishConfig": {
     "access": "public",
