@@ -28,6 +28,7 @@ from tools.network.ssl_checker import check_ssl_certificate
 from tools.security.deps import check_dependencies
 from tools.security.secrets import scan_secrets
 from tools.security.semgrep import run_semgrep_scan
+from tools.security.terraform import scan_terraform
 from tools.security.trivy import run_trivy_scan
 
 settings = load_settings()
@@ -147,6 +148,17 @@ def security_semgrep_scan(path: str, config: str = "auto", token: str = "") -> d
     """Run a Semgrep SAST scan on a local directory or file. This tool runs locally and has full access to the user's local filesystem (e.g. C:\\... paths). Config can be 'auto', 'p/python', 'p/javascript', etc."""
     _authorize(token, "security_semgrep_scan")
     return run_semgrep_scan(path, config)
+
+
+# ── Terraform security scanner ─────────────────────────────────────
+
+
+@mcp.tool()
+@audit_tool_call("security_scan_terraform")
+def security_scan_terraform(path: str, severity: str = "", token: str = "") -> dict:
+    """Scan Terraform (.tf) files for security misconfigurations (S3, IAM, RDS, EC2, networking, encryption, credentials). Optionally filter by severity (CRITICAL, HIGH, MEDIUM, LOW). This tool runs locally and has full access to the user's local filesystem."""
+    _authorize(token, "security_scan_terraform")
+    return scan_terraform(path, severity)
 
 
 # ── Jenkins CI/CD tools ────────────────────────────────────────────
