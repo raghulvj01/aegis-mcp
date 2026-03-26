@@ -1,6 +1,6 @@
 {
-  "name": "@raghulm/aegis-mcp",
-  "version": "1.0.5",
+  "name": "@raghulvj01/aegis-mcp",
+  "version": "1.0.6",
   "description": "DevSecOps-focused MCP server for AWS, Kubernetes, CI/CD, and security tooling.",
   "license": "MIT",
   "author": "Raghul M",
@@ -43,12 +43,11 @@
     "jenkins"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "engines": {
     "node": ">=18"
   },
-  "dependencies": {
-    "@raghulm/aegis-mcp": "^1.0.5"
-  }
+  "dependencies": {}
 }
